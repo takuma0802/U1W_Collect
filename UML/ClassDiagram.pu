@@ -1,0 +1,71 @@
+@startuml HorseLabyrinth
+
+    namespace Player{
+        interface InputEventProvider
+        class KeyInputProvider
+        KeyInputProvider --|> InputEventProvider
+
+        class PlayerCore{
+            + RP OnDamaged
+        }
+
+        class PlayerMover{
+
+        }
+
+        class PlayerAnimator
+        class PlayerEffectGenerator
+
+        PlayerCore ..|> Attack.IDamageApplicable
+        PlayerMover --> PlayerCore
+        PlayerAnimator --> PlayerCore
+        PlayerEffectGenerator --> PlayerCore
+
+    }
+
+    namespace Enemy{
+        abstract BaseEnemy{
+
+        }
+        class AnyEnemy
+
+        AnyEnemy --|> BaseEnemy
+        BaseEnemy ..|> Attack.IDamageApplicable
+    }
+
+    namespace Attack{
+        interface IDamageApplicable
+        class BulletExplosion
+        abstract BaseBullet
+        class PlayerBullet
+        class AnyBullet
+        
+        BaseBullet ..> IDamageApplicable
+        BulletExplosion ..> IDamageApplicable
+        PlayerBullet --|> BaseBullet
+        PlayerBullet ..> BulletExplosion
+        AnyBullet --|> BaseBullet
+        AnyBullet ..> BulletExplosion
+    }
+
+    namespace Manager{
+        enum GameState{
+            + Title
+            + Initialize
+            + Wave1
+            + Wave2
+            + Result
+        }
+
+        class GameManager{
+
+        }
+
+        class ScoreManager{
+
+        }
+
+        class AudioManager
+    }
+
+@enduml
