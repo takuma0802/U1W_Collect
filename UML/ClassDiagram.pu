@@ -37,15 +37,18 @@
         interface IDamageApplicable
         class BulletExplosion
         abstract BaseBullet
-        class PlayerBullet
+        class StarBullet
         class AnyBullet
         
         BaseBullet ..> IDamageApplicable
         BulletExplosion ..> IDamageApplicable
-        PlayerBullet --|> BaseBullet
-        PlayerBullet ..> BulletExplosion
+        AnyBullet ..|> IDamageApplicable
+        
+        StarBullet --|> BaseBullet
+        StarBullet ..> BulletExplosion
         AnyBullet --|> BaseBullet
         AnyBullet ..> BulletExplosion
+         
     }
 
     namespace Manager{
