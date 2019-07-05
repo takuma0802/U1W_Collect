@@ -9,7 +9,6 @@ using DG.Tweening;
 // 発射前にPlayerの周りで回転している星
 public class RollingStar : BaseBullet
 {
-    int _damagePower = 1;
     int _starSize = 1;
     PlayerCore core;
 
@@ -67,11 +66,10 @@ public class RollingStar : BaseBullet
         ChangeSize();
     }
 
-    // ButtonUp時に呼ばれる
+    // ButtonUp時に呼ばれ、自身を見えなくする
     public void ShootBullet()
     {
         StopChagingPower();
-        Debug.Log("Shoot!");
         gameObject.SetActive(false);
         _starSize = 1;
         ChangeSize();

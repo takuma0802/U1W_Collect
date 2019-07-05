@@ -82,8 +82,6 @@ public class StarShooter : MonoBehaviour
             });
     }
 
-
-
     // Player死亡
     void PlayerDamaged()
     {
