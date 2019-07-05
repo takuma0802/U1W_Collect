@@ -14,7 +14,7 @@ public class KeyInputProvider : MonoBehaviour,IInputProvider
     public IReadOnlyReactiveProperty<Vector2> MoveDirection { get { return _moveDirection;}}
 
     // Update is called once per frame
-    public void Start()
+    public void Awake()
     {
         this.UpdateAsObservable()
             .Select(_ => Input.GetKeyDown(KeyCode.Space))

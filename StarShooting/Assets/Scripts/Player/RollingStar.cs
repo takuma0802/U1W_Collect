@@ -54,7 +54,6 @@ public class RollingStar : BaseBullet
     void PlusSize()
     {
         _starSize++;
-        Debug.Log("SizePlus!:" + _starSize);
 
         // 自滅チェック
         if (_starSize > 3)

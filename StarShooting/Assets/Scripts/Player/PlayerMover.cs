@@ -8,7 +8,7 @@ public class PlayerMover : MonoBehaviour
     PlayerCore core;
     float _moveSpeed = 0.3f;
     
-    void Start()
+    void Awake()
     {
         core = GetComponent<PlayerCore>();
         core.InitializeSubject

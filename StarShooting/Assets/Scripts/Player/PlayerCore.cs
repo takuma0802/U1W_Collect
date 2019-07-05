@@ -19,13 +19,21 @@ public class PlayerCore : MonoBehaviour, IDamageApplicable
     Subject<Unit> _getStarSubject = new Subject<Unit>();
     public IObservable<Unit> GetStarSubject { get { return _getStarSubject; } }
 
+    ReactiveProperty<bool> _isDead = new ReactiveProperty<bool>(false);
+    public IReadOnlyReactiveProperty<bool> IsDead { get { return _isDead; } }
+
+
+    void Awake()
+    {
+        Debug.Log("Core");
+        _inputProvider = GetComponent<IInputProvider>();
+    }
     void Start()
     {
-        _inputProvider = GetComponent<IInputProvider>();
-        Initialize();
+        //Initialize();
     }
 
-    void Initialize()
+    public void Initialize()
     {
         this.OnTriggerEnter2DAsObservable()
             .Select(other => other.gameObject.GetComponent<StarItem>())
@@ -45,6 +53,6 @@ public class PlayerCore : MonoBehaviour, IDamageApplicable
     {
         // 死亡通知
         Debug.Log("GameOver!");
-        naichilab.RankingLoader.Instance.SendScoreAndShowRanking (100);
-    }    
+        _isDead.Value = true;
+    }
 }

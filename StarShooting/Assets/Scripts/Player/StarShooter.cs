@@ -19,10 +19,9 @@ public class StarShooter : MonoBehaviour
     PlayerCore core;
     CompositeDisposable _compositeDisposable = new CompositeDisposable();　// 保有している星の監視用リスト
 
-    void Start()
+    void Awake()
     {
         core = GetComponent<PlayerCore>();
-
         core.InitializeSubject
             .Subscribe(_ =>
             {
@@ -53,7 +52,6 @@ public class StarShooter : MonoBehaviour
             .Where(x => starNum.Value > 0)
             .Subscribe(x =>
             {
-                Debug.Log("ButtonDown！");
                 ChargingPower();
             });
 
@@ -63,7 +61,6 @@ public class StarShooter : MonoBehaviour
             .Where(_ => HoldingStars[nextStar.Value].IsCharging)
             .Subscribe(x =>
             {
-                Debug.Log("ButtonUp！");
                 ShootStar();
             });
 
