@@ -25,7 +25,6 @@ public class PlayerCore : MonoBehaviour, IDamageApplicable
 
     void Awake()
     {
-        Debug.Log("Core");
         _inputProvider = GetComponent<IInputProvider>();
     }
     void Start()
@@ -33,8 +32,10 @@ public class PlayerCore : MonoBehaviour, IDamageApplicable
         //Initialize();
     }
 
-    public void Initialize()
+    public void Initialize(IGameStateReadable gameState)
     {
+        _currentGameState = gameState;
+
         this.OnTriggerEnter2DAsObservable()
             .Select(other => other.gameObject.GetComponent<StarItem>())
             .Where(star => star != null)
@@ -42,7 +43,7 @@ public class PlayerCore : MonoBehaviour, IDamageApplicable
             {
                 _getStarSubject.OnNext(Unit.Default);
                 star.DestroyStar();
-            });
+            }).AddTo(this.gameObject);
 
         // その他のクラスの初期化
         _initializeSubject.OnNext(Unit.Default);

@@ -22,6 +22,7 @@ public class PlayerMover : MonoBehaviour
     void Initialize()
     {
         core.InputProvider.MoveDirection
+            .Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main)
             .Subscribe(v2 =>
             {
                 var hori = v2.x * _moveSpeed;
@@ -30,12 +31,5 @@ public class PlayerMover : MonoBehaviour
                 pos = Utilities.ClampPosition(pos);
                 transform.position = pos;
             }).AddTo(this.gameObject);
-
-        // this.LateUpdateAsObservable()
-        //     //.Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main)
-        //     .Subscribe(_ => 
-        //     {
-        //         Utilities.ClampPosition(transform.position);
-        //     });
     }
 }

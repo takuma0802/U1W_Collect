@@ -9,8 +9,8 @@ using DG.Tweening;
 // 発射前にPlayerの周りで回転している星
 public class RollingStar : BaseBullet
 {
-    int _starSize = 1;
-    PlayerCore core;
+    int _starSize = 0;
+    public PlayerCore core;
 
     IDisposable _isCharging;
     public bool IsCharging { get { return _isCharging != null; } }
@@ -18,22 +18,21 @@ public class RollingStar : BaseBullet
     ReactiveProperty<bool> _onDestroyPlayer = new ReactiveProperty<bool>(); // 自滅判定用
     public IReadOnlyReactiveProperty<bool> OnDestroyPlayer { get { return _onDestroyPlayer; } }
 
-    private Dictionary<int, float> _sizeDictionary = new Dictionary<int, float>() { { 1, 1f }, { 2, 1.2f }, { 3, 1.5f } };
+    private Dictionary<int, float> _sizeDictionary = new Dictionary<int, float>() { { 0, 0.56f }, { 1, 0.8f }, { 2, 1f }, { 3, 1.2f } };
 
     void Start()
     {
-        // coreをGetすべし
-
         // 発射前に何かに衝突した時
         this.OnTriggerEnter2DAsObservable()
-            .Where(other => other.gameObject.GetComponent<PlayerCore>() == null)
+            .Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main) // InGameかどうか
+            .Where(other => other.gameObject.GetComponent<PlayerCore>() == null)        // Playerだったら無視
             .Select(other => other.gameObject.GetComponent<IDamageApplicable>())
             .Where(damageApplicable => damageApplicable != null)
             .Subscribe(damageApplicable =>
             {
                 // 死亡
                 DestroyPlayer();
-            });
+            }).AddTo(this.gameObject);
     }
 
     // Playerが死んだ時に呼ぶ
@@ -70,13 +69,13 @@ public class RollingStar : BaseBullet
     {
         StopChagingPower();
         gameObject.SetActive(false);
-        _starSize = 1;
+        _starSize = 0;
         ChangeSize();
     }
 
     void ChangeSize()
     {
-        Vector2 nextSize = new Vector2(_sizeDictionary[_starSize],_sizeDictionary[_starSize]);
+        Vector2 nextSize = new Vector2(_sizeDictionary[_starSize], _sizeDictionary[_starSize]);
         gameObject.transform.DOScale(nextSize, 0.1f);
     }
 

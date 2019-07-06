@@ -28,7 +28,7 @@ public class StarBullet : BaseBullet
             .Subscribe(damageApplicable =>
             {
                 damageApplicable.ApplyDamage(_damagePower);
-            });
+            }).AddTo(this.gameObject);
 
         // 敵に衝突した時、自身を消す
         this.OnTriggerEnter2DAsObservable()
@@ -37,7 +37,7 @@ public class StarBullet : BaseBullet
             .Subscribe(enemy =>
             {
                 DestroyMyself(0);
-            });
+            }).AddTo(this.gameObject);
     }
 
     void DestroyMyself(float time)

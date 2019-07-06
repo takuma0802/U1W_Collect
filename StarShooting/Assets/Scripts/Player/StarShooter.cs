@@ -38,16 +38,17 @@ public class StarShooter : MonoBehaviour
 
         foreach (var star in HoldingStars)
         {
+            star.core = core;
             var stream = star.OnDestroyPlayer
                         .Where(x => x)
                         .Subscribe(_ => PlayerDamaged());
-
+            
             _compositeDisposable.Add(stream);
             star.gameObject.SetActive(false);
         }
 
         core.InputProvider.AttackButtonDown
-            //.Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main)
+            .Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main)
             .Where(x => x)
             .Where(x => starNum.Value > 0)
             .Subscribe(x =>
@@ -56,7 +57,7 @@ public class StarShooter : MonoBehaviour
             }).AddTo(this.gameObject);
 
         core.InputProvider.AttackButtonUp
-            //.Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main)
+            .Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main)
             .Where(x => x)
             .Where(_ => HoldingStars[nextStar.Value].IsCharging)
             .Subscribe(x =>
@@ -65,14 +66,14 @@ public class StarShooter : MonoBehaviour
             }).AddTo(this.gameObject);
 
         core.GetStarSubject
-            //.Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main)
+            .Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main)
             .Subscribe(_ =>
             {
                 AddStar();
             }).AddTo(this.gameObject);
 
         this.UpdateAsObservable()
-            //.Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main)
+            .Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main)
             .Subscribe(_ =>
             {
                 StarBox.transform.Rotate(-Vector3.forward, Time.deltaTime * rotateSpeed);
