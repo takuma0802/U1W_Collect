@@ -11,7 +11,8 @@ public class StarBullet : BaseBullet
 {
     public bool WasFired = false; // 発射されているかどうか
     int _damagePower = 1;
-    float moveSpeed = 8f;
+    float moveSpeed = 0.3f;
+    Vector3 m_velocity; // 速度
 
     ReactiveProperty<bool> _onDestroyPlayer = new ReactiveProperty<bool>(); // 自滅判定用
     public IReadOnlyReactiveProperty<bool> OnDestroyPlayer { get { return _onDestroyPlayer; } }
@@ -35,26 +36,24 @@ public class StarBullet : BaseBullet
             .Where(enemy => enemy != null)
             .Subscribe(enemy =>
             {
-                DestroyMyself();
+                DestroyMyself(0);
             });
     }
 
-    void DestroyMyself()
+    void DestroyMyself(float time)
     {
-        Destroy(this.gameObject);
+        Destroy(this.gameObject,time);
     }
 
-    public void ShootBullet(float[] result)
+    public void ShootBullet(Vector2 direction,Vector2 scale)
     {
-        var x = Mathf.Sign(result[0]);
-        var y = Mathf.Sign(result[1]);
-
+        transform.localScale = scale;
+        m_velocity = direction * moveSpeed;
         this.UpdateAsObservable()
             .Subscribe(_ => 
             {
-                var xDir = Time.deltaTime * moveSpeed * x;
-                var yDir = Time.deltaTime * moveSpeed * y * result[2];
-                transform.Translate(new Vector2(xDir, yDir));
+                transform.Translate(m_velocity);
             }).AddTo(this);
+        DestroyMyself(4);
     }
 }

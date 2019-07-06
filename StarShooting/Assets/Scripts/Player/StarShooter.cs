@@ -53,7 +53,7 @@ public class StarShooter : MonoBehaviour
             .Subscribe(x =>
             {
                 ChargingPower();
-            });
+            }).AddTo(this.gameObject);
 
         core.InputProvider.AttackButtonUp
             //.Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main)
@@ -62,21 +62,21 @@ public class StarShooter : MonoBehaviour
             .Subscribe(x =>
             {
                 ShootStar();
-            });
+            }).AddTo(this.gameObject);
 
         core.GetStarSubject
             //.Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main)
             .Subscribe(_ =>
             {
                 AddStar();
-            });
+            }).AddTo(this.gameObject);
 
         this.UpdateAsObservable()
             //.Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main)
             .Subscribe(_ =>
             {
                 StarBox.transform.Rotate(-Vector3.forward, Time.deltaTime * rotateSpeed);
-            });
+            }).AddTo(this.gameObject);
     }
 
     // Player死亡
@@ -103,24 +103,16 @@ public class StarShooter : MonoBehaviour
 
     void ShootStar()
     {
-        var result = CulcShootAngle();
-        var bullet = Instantiate(StarBulletPrefab,HoldingStars[nextStar.Value].gameObject.transform.position,Quaternion.identity).GetComponent<StarBullet>();
-        bullet.ShootBullet(result);
+        var nextStarObject = HoldingStars[nextStar.Value].gameObject.transform;
+        var angle = Utilities.GetAngle(transform.position, nextStarObject.position);
+        var direction = Utilities.GetDirection(angle);
+        
+        var bullet = Instantiate(StarBulletPrefab, nextStarObject.position, Quaternion.identity).GetComponent<StarBullet>();
+        bullet.ShootBullet(direction,nextStarObject.localScale);
         HoldingStars[nextStar.Value].ShootBullet();
+        
         nextStar.Value++;
         if (nextStar.Value >= 7) nextStar.Value -= 7;
         starNum.Value--;
-    }
-
-    float[] CulcShootAngle()
-    {
-        Vector2 playerPos = transform.position;
-        Vector2 starPos = HoldingStars[nextStar.Value].gameObject.transform.position;
-        
-        float xdiff = starPos.x - playerPos.x;
-        float ydiff = starPos.y - playerPos.y;
-        float ratio = Mathf.Abs(ydiff / xdiff);
-        var result = new float[3]{xdiff,ydiff,ratio};
-        return result;
     }
 }
