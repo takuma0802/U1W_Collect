@@ -45,6 +45,7 @@ public class PlayerCore : MonoBehaviour, IDamageApplicable
             {
                 _getStarSubject.OnNext(Unit.Default);
                 star.GetStar();
+                AudioManager.Instance.PlaySE(SE.Item.ToString());
             }).AddTo(this.gameObject);
 
         PlayerLife.SkipLatestValueOnSubscribe().Subscribe(x => 
@@ -66,13 +67,13 @@ public class PlayerCore : MonoBehaviour, IDamageApplicable
 
     public void ApplyDamage(int power)
     {
-        Debug.Log("Damage!");
+        AudioManager.Instance.PlaySE(SE.PlayerHit.ToString());
         _playerLife.Value -= power;
     }
 
     void PlayerDead()
     {
-        Debug.Log("GameOver!");
+        AudioManager.Instance.PlaySE(SE.LastHit.ToString());
         Instantiate(_destroyExplosion,transform.position,Quaternion.identity);
         _isDead.Value = true;
     }

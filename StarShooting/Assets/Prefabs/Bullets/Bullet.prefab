@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f92de32128c924fe5b95ae5cc2ff86cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moveSpeed: 2
   sprite: {fileID: 8086912695095683642}
   _destroyExplosion: {fileID: 6756029727915426709, guid: fb1425403252748baa50b403bdf2544d,
     type: 3}

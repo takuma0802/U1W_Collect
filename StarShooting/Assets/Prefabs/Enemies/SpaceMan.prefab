@@ -45,6 +45,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bbb35e22094645eda2b181c249d5a82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _moveSpeed: 2
+  _myBulletPrefab: {fileID: 1950969704935984526, guid: 655c9b5d34d8446c6a845b283b5cdc30,
+    type: 3}
+  _destroyExplosion: {fileID: 6756029727915426709, guid: fb1425403252748baa50b403bdf2544d,
+    type: 3}
+  _shotFrequency: 3.5
 --- !u!70 &5598090762469549116
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

@@ -39,7 +39,13 @@ public class EnemyController : MonoBehaviour
         CreaAllEnemyStream();
         ManagementEnemyGenerating();
 
-        _generateEnemyStream = ReSettingGenerateStream();
+        Observable.Timer(TimeSpan.FromSeconds(5))
+            .First()
+            .Subscribe(_ =>
+            {
+                _generateEnemyStream = ReSettingGenerateStream();
+            });
+
 
         _currentWave.CurrentWaveState.Subscribe(x =>
         {

@@ -150,3 +150,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c38fb63fe3c0d462c9d66a8ab9a096f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _moveSpeed: 4
+  _myBulletPrefab: {fileID: 4619558927499986667, guid: f1f64dbe3ed424fc5bcef58d47dc62d8,
+    type: 3}
+  _destroyExplosion: {fileID: 6756029727915426709, guid: fb1425403252748baa50b403bdf2544d,
+    type: 3}
+  _shotFrequency: 4

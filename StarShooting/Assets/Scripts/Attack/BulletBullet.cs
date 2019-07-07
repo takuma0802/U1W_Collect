@@ -6,8 +6,7 @@ using UniRx.Triggers;
 
 public class BulletBullet : BaseBullet, IDamageApplicable
 {
-    int _damagePower = 1;
-    float moveSpeed = 3f;
+    [SerializeField] float moveSpeed;
     Vector3 m_velocity; // 速度
     [SerializeField] GameObject sprite;
 
@@ -21,6 +20,7 @@ public class BulletBullet : BaseBullet, IDamageApplicable
             .Subscribe(damageApplicable =>
             {
                 damageApplicable.ApplyDamage(1);
+                ApplyDamage(1);
             }).AddTo(this.gameObject);
     }
 

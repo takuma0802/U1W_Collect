@@ -7,7 +7,7 @@ public abstract class BaseEnemy : MonoBehaviour, IDamageApplicable
 {
     protected Vector2 currentPos;
     protected Vector2 targetPos;
-    protected float _moveSpeed;
+    [SerializeField] protected float _moveSpeed;
     protected Vector2 _moveDirection;
     protected SpownArea _spownArea;
     protected ReactiveProperty<int> _isDead = new ReactiveProperty<int>(0);

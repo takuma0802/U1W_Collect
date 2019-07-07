@@ -11,7 +11,8 @@ public class StarShooter : MonoBehaviour
     [SerializeField] GameObject StarBulletPrefab;
     float rotateSpeed = 170f;
 
-    public RollingStar[] HoldingStars = new RollingStar[7];
+    [SerializeField] RollingStar[] HoldingStars;
+    [SerializeField] GameObject[] HoldingStarArrows;
 
     ReactiveProperty<int> starNum = new ReactiveProperty<int>(0);  // Starの保有数
     ReactiveProperty<int> nextStar = new ReactiveProperty<int>(0); // 次発射するStar
@@ -35,13 +36,14 @@ public class StarShooter : MonoBehaviour
         starNum.Value = 0;
         nextStar.Value = 0;
         rotateSpeed = 170f;
+        HoldingStarArrows[0].SetActive(true);
 
         foreach (var star in HoldingStars)
         {
             star.core = core;
             var stream = star.OnDamaged
                         .Subscribe(_ => PlayerDamaged());
-            
+
             _compositeDisposable.Add(stream);
             star.gameObject.SetActive(false);
         }
@@ -77,6 +79,19 @@ public class StarShooter : MonoBehaviour
             {
                 StarBox.transform.Rotate(-Vector3.forward, Time.deltaTime * rotateSpeed);
             }).AddTo(this.gameObject);
+
+        nextStar.Subscribe(x =>
+        {
+            if (starNum.Value > 0)
+            {
+                HoldingStarArrows[x].SetActive(true);
+            }
+
+            if (x == 0) x = 7;
+            HoldingStarArrows[x - 1].SetActive(false);
+        });
+
+
     }
 
     void PlayerDamaged()
@@ -104,13 +119,21 @@ public class StarShooter : MonoBehaviour
         var nextStarObject = HoldingStars[nextStar.Value].gameObject.transform;
         var angle = Utilities.GetAngle(transform.position, nextStarObject.position);
         var direction = Utilities.GetDirection(angle);
-        
+
         var bullet = Instantiate(StarBulletPrefab, nextStarObject.position, Quaternion.identity).GetComponent<StarBullet>();
-        bullet.ShootBullet(direction,nextStarObject.localScale);
+        bullet.ShootBullet(direction, nextStarObject.localScale);
         HoldingStars[nextStar.Value].ShootBullet();
-        
-        nextStar.Value++;
-        if (nextStar.Value >= 7) nextStar.Value -= 7;
+        AudioManager.Instance.PlaySE(SE.Shot.ToString());
+
         starNum.Value--;
+
+        if (nextStar.Value + 1 >= 7)
+        {
+            nextStar.Value = 0;
+        }
+        else
+        {
+            nextStar.Value++;
+        }
     }
 }

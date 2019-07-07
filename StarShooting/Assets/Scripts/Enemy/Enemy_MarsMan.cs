@@ -12,13 +12,14 @@ public class Enemy_MarsMan : BaseEnemy
     [SerializeField] GameObject _destroyExplosion;
     PlayerCore _core;
     Vector2 moveVelocity; // 自信の移動速度
-    float _shotFrequency = 5f; // 弾の発射間隔
-    float _angleRange = 40f; // 複数の弾を発射する時の角度
+    [SerializeField] float _shotFrequency = 5f; // 弾の発射間隔
+    [SerializeField] float _angleRange = 40f; // 複数の弾を発射する時の角度
 
     public override void Init(SpownArea spwonType, float moveSpeed, PlayerCore core)
     {
         base.Init(spwonType, moveSpeed, core);
         _core = core;
+        //_moveSpeed = 0.8f;
         
         StartCoroutine(InitializeCoroutine());
     }
@@ -78,16 +79,28 @@ public class Enemy_MarsMan : BaseEnemy
         switch (_spownArea)
         {
             case SpownArea.UPPER:
-                return Vector2.down;
+                return new Vector2(1,-1);
 
             case SpownArea.BOTTOM:
-                return Vector2.up;
+                return new Vector2(-1,1);
 
             case SpownArea.RIGHT:
-                return Vector2.left;
+                return new Vector2(-1,0.5f);
 
             case SpownArea.LEFT:
-                return Vector2.right;
+                return new Vector2(1,-0.5f);
+            
+            case SpownArea.UPPERLEFT:
+                return new Vector2(0,-1);
+
+            case SpownArea.BOTTOMLEFT:
+                return new Vector2(0,1);
+
+            case SpownArea.UPPERRIGHT:
+                return new Vector2(0,-1);
+
+            case SpownArea.BOTTOMRIGHT:
+                return new Vector2(0,1);
 
             default:
                 return Vector2.zero;

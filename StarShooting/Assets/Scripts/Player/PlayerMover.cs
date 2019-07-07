@@ -7,7 +7,7 @@ using UniRx.Triggers;
 public class PlayerMover : MonoBehaviour
 {
     PlayerCore core;
-    float _moveSpeed = 0.15f;
+    [SerializeField] float _moveSpeed = 0.1f;
 
     void Awake()
     {

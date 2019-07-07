@@ -12,8 +12,8 @@ public class Enemy_MoonFace : BaseEnemy
     [SerializeField] GameObject _destroyExplosion;
     PlayerCore _core;
     Vector2 moveVelocity; // 自信の移動速度
-    float _shotFrequency = 4f; // 弾の発射間隔
-    float _oneShotFrequency = 0.4f; // 弾の発射間隔
+    [SerializeField] float _shotFrequency = 4f; // 弾の発射間隔
+    [SerializeField] float _oneShotFrequency = 0.4f; // 1回の発射間隔
 
     public override void Init(SpownArea spwonType, float moveSpeed, PlayerCore core)
     {
@@ -79,17 +79,29 @@ public class Enemy_MoonFace : BaseEnemy
     {
         switch (_spownArea)
         {
+            case SpownArea.UPPER:
+                return new Vector2(-1,-1);
+
+            case SpownArea.BOTTOM:
+                return new Vector2(1,1);
+
+            case SpownArea.RIGHT:
+                return new Vector2(-1,-0.5f);
+
+            case SpownArea.LEFT:
+                return new Vector2(1,0.5f);
+            
             case SpownArea.UPPERLEFT:
-                return Vector2.down;
-
-            case SpownArea.BOTTOMRIGHT:
-                return Vector2.up;
-
-            case SpownArea.UPPERRIGHT:
-                return Vector2.left;
+                return new Vector2(1,0);
 
             case SpownArea.BOTTOMLEFT:
-                return Vector2.right;
+                return new Vector2(1,0);
+
+            case SpownArea.UPPERRIGHT:
+                return new Vector2(-1,0);
+
+            case SpownArea.BOTTOMRIGHT:
+                return new Vector2(0,1);
 
             default:
                 return Vector2.zero;
@@ -107,6 +119,7 @@ public class Enemy_MoonFace : BaseEnemy
     {
         // 弾の発射角度の計算
         var angle = Utilities.GetAngle(transform.position, _core.gameObject.transform.position);
+        AudioManager.Instance.PlaySE(SE.Bullet.ToString());
 
         for (int i = 0; i < 3; ++i)
         {

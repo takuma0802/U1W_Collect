@@ -6,10 +6,10 @@ using UniRx.Triggers;
 
 public class ArrowBullet : BaseBullet, IDamageApplicable
 {
-    int _damagePower = 1;
-    float moveSpeed = 2f;
+    [SerializeField] float moveSpeed;
     Vector3 m_velocity; // 速度
     [SerializeField] GameObject sprite;
+    [SerializeField] GameObject _destroyExplosion;
 
     void Start()
     {
@@ -21,9 +21,10 @@ public class ArrowBullet : BaseBullet, IDamageApplicable
             .Subscribe(damageApplicable =>
             {
                 damageApplicable.ApplyDamage(1);
+                ApplyDamage(1);
             }).AddTo(this.gameObject);
     }
-    [SerializeField] GameObject _destroyExplosion;
+   
     public void ApplyDamage(int power)
     {
         var explosion = Instantiate(_destroyExplosion, transform.position, Quaternion.identity);

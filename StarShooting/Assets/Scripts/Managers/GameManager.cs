@@ -20,7 +20,8 @@ public enum WaveState
     Wave1 = 1,
     Wave2 = 2,
     Wave3 = 3,
-    Wave4 = 4
+    Wave4 = 4,
+    Wave5 = 5
 }
 
 public class GameManager : MonoBehaviour, IGameStateReadable, IWaveStateReadable
@@ -45,12 +46,11 @@ public class GameManager : MonoBehaviour, IGameStateReadable, IWaveStateReadable
     ScoreManager _scoreManager;
     StarGenerator _starGenerator;
     GameView _gameView;
+    int _currentScore;
 
 
     void Start()
     {
-        DontDestroyOnLoad(this);
-
         AudioManager.Instance.PlayBGM(BGM.BGM1.ToString(), 2f);
         _enemyController = GetComponent<EnemyController>();
         _timeManager = GetComponent<TimeManager>();
@@ -100,13 +100,14 @@ public class GameManager : MonoBehaviour, IGameStateReadable, IWaveStateReadable
 
     public void InitializeGameScene()
     {
-        _playerCore = Instantiate(_playerPrefab).GetComponent<PlayerCore>();
+        _playerCore = Instantiate(_playerPrefab,Vector2.zero,Quaternion.identity).GetComponent<PlayerCore>();
         _playerCore.Initialize(this);
         _enemyController.Initialize(this, _playerCore);
         _starGenerator.Initialize(this, _playerCore);
         _timeManager.Reset(this);
         _gameView.ResetView();
-
+        
+        _currentWave.Value = WaveState.Wave0;
         _currentGameState.Value = GameState.Main;
     }
 
@@ -119,7 +120,6 @@ public class GameManager : MonoBehaviour, IGameStateReadable, IWaveStateReadable
 
         _playerCore.IsDead
             .Where(x => x)
-            .Delay(TimeSpan.FromSeconds(2))
             .Subscribe(x =>
             {
                 _currentGameState.Value = GameState.Result;
@@ -132,11 +132,24 @@ public class GameManager : MonoBehaviour, IGameStateReadable, IWaveStateReadable
         _playerCore.PlayerLife
             .SkipLatestValueOnSubscribe()
             .Where(x => x >= 0)
+            .TakeWhile(_ => CurrentGameState.Value != GameState.Result)
             .Subscribe(x => _gameView.CutLifeView(x));
         
-        _enemyController.KillNumber.Subscribe(x => _gameView.UpdateEnemyView(x));
-        _timeManager.PassedTime.Subscribe(x => _gameView.UpdateTimeView(x));
-        _starGenerator.GetStarNumber.Subscribe(x => _gameView.UpdateStarView(x));
+        _enemyController.KillNumber
+            .TakeWhile(_ => CurrentGameState.Value != GameState.Result)
+                .Subscribe(x => _gameView.UpdateEnemyView(x));
+
+        _timeManager.PassedTime
+            .TakeWhile(_ => CurrentGameState.Value != GameState.Result)
+            .Subscribe(x => _gameView.UpdateTimeView(x));
+
+        _starGenerator.GetStarNumber
+            .TakeWhile(_ => CurrentGameState.Value != GameState.Result)
+            .Subscribe(x => _gameView.UpdateStarView(x));
+
+        CurrentWaveState
+            .Where(_ => CurrentGameState.Value == GameState.Main)
+            .Subscribe(x => _gameView.UpdateWaveView(x));
     }
 
     void UpdateWaveState()
@@ -144,14 +157,14 @@ public class GameManager : MonoBehaviour, IGameStateReadable, IWaveStateReadable
         // Wave管理
         _enemyController.KillNumber
             .Where(x => CurrentGameState.Value == GameState.Main)
-            .Where(x => x >= WavePointOfKilledEnemy[(int)_currentWave.Value])
-            .TakeWhile(_ => CurrentGameState.Value == GameState.Result)
+            .Where(x => x > WavePointOfKilledEnemy[(int)_currentWave.Value])
+            .TakeWhile(_ => CurrentGameState.Value != GameState.Result)
             .Subscribe(_ => PlusWaveState());
-
+            
         _timeManager.PassedTime
             .Where(x => CurrentGameState.Value == GameState.Main)
-            .Where(x => x >= WavePointOfSpendTime[(int)_currentWave.Value])
-            .TakeWhile(_ => CurrentGameState.Value == GameState.Result)
+            .Where(x => x > WavePointOfSpendTime[(int)_currentWave.Value])
+            .TakeWhile(_ => CurrentGameState.Value != GameState.Result)
             .Subscribe(_ => PlusWaveState());
     }
 
@@ -163,13 +176,13 @@ public class GameManager : MonoBehaviour, IGameStateReadable, IWaveStateReadable
 
     void ResultState()
     {
-        //Time.timeScale = 0;
-        var score = _scoreManager.Score;
         var time = _timeManager.PassedTime.Value;
         var enemy = _enemyController.KillNumber.Value;
         var allEnemy = _enemyController.AllGeneratedEnemies.Value;
         var star = _starGenerator.GetStarNumber.Value;
-        _gameView.ShowResult(score,time,enemy,allEnemy,star);
+        int[] scores = _scoreManager.CulcScore(time,enemy,allEnemy,star);
+        _currentScore = scores[3];
+        _gameView.ShowResult(scores,time,enemy,allEnemy,star);
 
         _enemyController.CreaAllEnemyStream();
         _starGenerator.CreaAllEnemyStream();
@@ -178,11 +191,12 @@ public class GameManager : MonoBehaviour, IGameStateReadable, IWaveStateReadable
 
     void RankingState()
     {
-        naichilab.RankingLoader.Instance.SendScoreAndShowRanking(100);
+        naichilab.RankingLoader.Instance.SendScoreAndShowRanking(_currentScore);
     }
 
     public void OnClickStartButton()
     {
+        AudioManager.Instance.PlaySE(SE.Click.ToString());
         _cameras[0].gameObject.SetActive(true);
         _canvases[0].gameObject.SetActive(true);
         _cameras[1].gameObject.SetActive(false);
@@ -192,11 +206,13 @@ public class GameManager : MonoBehaviour, IGameStateReadable, IWaveStateReadable
 
     public void OnClickTitleBackButton()
     {
+        AudioManager.Instance.PlaySE(SE.Click.ToString());
         _currentGameState.Value = GameState.Title;
     }
 
     public void OnClickRankingButton()
     {
+        AudioManager.Instance.PlaySE(SE.Click.ToString());
         _currentGameState.Value = GameState.Ranking;
     }
 }
