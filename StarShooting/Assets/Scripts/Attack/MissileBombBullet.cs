@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NormalEnemy : MonoBehaviour
+public class MissileBombBullet : MonoBehaviour
 {
     // Start is called before the first frame update
     void Start()

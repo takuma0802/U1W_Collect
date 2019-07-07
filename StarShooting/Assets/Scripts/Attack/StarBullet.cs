@@ -9,18 +9,13 @@ using DG.Tweening;
 // 発射後に生成される星
 public class StarBullet : BaseBullet
 {
-    public bool WasFired = false; // 発射されているかどうか
     int _damagePower = 1;
-    float moveSpeed = 0.3f;
+    float moveSpeed = 10f;
     Vector3 m_velocity; // 速度
-
-    ReactiveProperty<bool> _onDestroyPlayer = new ReactiveProperty<bool>(); // 自滅判定用
-    public IReadOnlyReactiveProperty<bool> OnDestroyPlayer { get { return _onDestroyPlayer; } }
-
 
     void Start()
     {
-        // 敵か球に衝突した時、そいつにダメージを与える
+        // 敵か弾に衝突した時、そいつにダメージを与える
         this.OnTriggerEnter2DAsObservable()
             .Where(other => other.gameObject.GetComponent<PlayerCore>() == null)
             .Select(other => other.gameObject.GetComponent<IDamageApplicable>())
@@ -48,12 +43,18 @@ public class StarBullet : BaseBullet
     public void ShootBullet(Vector2 direction,Vector2 scale)
     {
         transform.localScale = scale;
-        m_velocity = direction * moveSpeed;
+        m_velocity = direction.normalized * moveSpeed;
         this.UpdateAsObservable()
             .Subscribe(_ => 
             {
-                transform.Translate(m_velocity);
+                transform.Translate(m_velocity * Time.deltaTime);
+
+                // 画面外に出たら消滅
+                if(!Utilities.CheckVisibllity(transform.position)) 
+                {
+                    Destroy(gameObject);
+                }
+
             }).AddTo(this);
-        DestroyMyself(4);
     }
 }

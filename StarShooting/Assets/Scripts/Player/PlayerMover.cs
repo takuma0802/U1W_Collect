@@ -7,7 +7,7 @@ using UniRx.Triggers;
 public class PlayerMover : MonoBehaviour
 {
     PlayerCore core;
-    float _moveSpeed = 0.3f;
+    float _moveSpeed = 0.15f;
 
     void Awake()
     {
@@ -23,6 +23,7 @@ public class PlayerMover : MonoBehaviour
     {
         core.InputProvider.MoveDirection
             .Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main)
+            .Where(_ => !core.IsDead.Value)
             .Subscribe(v2 =>
             {
                 var hori = v2.x * _moveSpeed;

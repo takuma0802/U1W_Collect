@@ -7,16 +7,17 @@ using UniRx.Triggers;
 using DG.Tweening;
 
 // 発射前にPlayerの周りで回転している星
-public class RollingStar : BaseBullet
+public class RollingStar : BaseBullet,IDamageApplicable
 {
+    [SerializeField] GameObject _destroyExplosion;
     int _starSize = 0;
     public PlayerCore core;
 
     IDisposable _isCharging;
     public bool IsCharging { get { return _isCharging != null; } }
 
-    ReactiveProperty<bool> _onDestroyPlayer = new ReactiveProperty<bool>(); // 自滅判定用
-    public IReadOnlyReactiveProperty<bool> OnDestroyPlayer { get { return _onDestroyPlayer; } }
+    Subject<Unit> _onDamaged = new Subject<Unit>(); // 自滅判定用
+    public IObservable<Unit> OnDamaged { get { return _onDamaged; } }
 
     private Dictionary<int, float> _sizeDictionary = new Dictionary<int, float>() { { 0, 0.56f }, { 1, 0.8f }, { 2, 1f }, { 3, 1.2f } };
 
@@ -30,15 +31,16 @@ public class RollingStar : BaseBullet
             .Where(damageApplicable => damageApplicable != null)
             .Subscribe(damageApplicable =>
             {
-                // 死亡
-                DestroyPlayer();
+                ApplyDamage(1);
+                damageApplicable.ApplyDamage(1);
             }).AddTo(this.gameObject);
     }
 
-    // Playerが死んだ時に呼ぶ
-    void DestroyPlayer()
+    public void ApplyDamage(int damage)
     {
-        _onDestroyPlayer.Value = true;
+        var explosion = Instantiate(_destroyExplosion, transform.position, Quaternion.identity);
+        explosion.transform.localScale = new Vector2(1.5f, 1.5f);
+        _onDamaged.OnNext(Unit.Default);
     }
 
     public void ChargePower()
@@ -57,7 +59,7 @@ public class RollingStar : BaseBullet
         // 自滅チェック
         if (_starSize > 3)
         {
-            DestroyPlayer();
+            ApplyDamage(1);
             return;
         }
 

@@ -9,7 +9,7 @@ public class StarShooter : MonoBehaviour
 {
     [SerializeField] GameObject StarBox;
     [SerializeField] GameObject StarBulletPrefab;
-    float rotateSpeed = 200f;
+    float rotateSpeed = 170f;
 
     public RollingStar[] HoldingStars = new RollingStar[7];
 
@@ -34,13 +34,12 @@ public class StarShooter : MonoBehaviour
         _compositeDisposable.Clear();
         starNum.Value = 0;
         nextStar.Value = 0;
-        rotateSpeed = 200f;
+        rotateSpeed = 170f;
 
         foreach (var star in HoldingStars)
         {
             star.core = core;
-            var stream = star.OnDestroyPlayer
-                        .Where(x => x)
+            var stream = star.OnDamaged
                         .Subscribe(_ => PlayerDamaged());
             
             _compositeDisposable.Add(stream);
@@ -80,11 +79,9 @@ public class StarShooter : MonoBehaviour
             }).AddTo(this.gameObject);
     }
 
-    // Player死亡
     void PlayerDamaged()
     {
         core.ApplyDamage(1);
-        _compositeDisposable.Clear();
     }
 
     public void AddStar()

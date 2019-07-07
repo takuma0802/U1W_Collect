@@ -4,9 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
 using UniRx.Triggers;
+using DG.Tweening;
 
 public class PlayerCore : MonoBehaviour, IDamageApplicable
 {
+    [SerializeField] GameObject _destroyExplosion;
+
     Subject<Unit> _initializeSubject = new Subject<Unit>();
     public IObservable<Unit> InitializeSubject { get { return _initializeSubject; } }
 
@@ -22,14 +25,13 @@ public class PlayerCore : MonoBehaviour, IDamageApplicable
     ReactiveProperty<bool> _isDead = new ReactiveProperty<bool>(false);
     public IReadOnlyReactiveProperty<bool> IsDead { get { return _isDead; } }
 
+    ReactiveProperty<int> _playerLife = new ReactiveProperty<int>(3);
+    public IReadOnlyReactiveProperty<int> PlayerLife { get { return _playerLife; } }
+
 
     void Awake()
     {
         _inputProvider = GetComponent<IInputProvider>();
-    }
-    void Start()
-    {
-        //Initialize();
     }
 
     public void Initialize(IGameStateReadable gameState)
@@ -42,8 +44,20 @@ public class PlayerCore : MonoBehaviour, IDamageApplicable
             .Subscribe(star =>
             {
                 _getStarSubject.OnNext(Unit.Default);
-                star.DestroyStar();
+                star.GetStar();
             }).AddTo(this.gameObject);
+
+        PlayerLife.SkipLatestValueOnSubscribe().Subscribe(x => 
+        {
+            if(x <= 0) 
+            {
+                PlayerDead();
+                return;
+            }
+            
+            // ダメージアニメーション
+            var sequence = GetComponent<SpriteRenderer>().DOFade(0.0f, 0.3f).SetEase(Ease.Linear).SetLoops(3, LoopType.Restart);
+        });
 
         // その他のクラスの初期化
         _initializeSubject.OnNext(Unit.Default);
@@ -52,8 +66,19 @@ public class PlayerCore : MonoBehaviour, IDamageApplicable
 
     public void ApplyDamage(int power)
     {
-        // 死亡通知
+        Debug.Log("Damage!");
+        _playerLife.Value -= power;
+    }
+
+    void PlayerDead()
+    {
         Debug.Log("GameOver!");
+        Instantiate(_destroyExplosion,transform.position,Quaternion.identity);
         _isDead.Value = true;
+    }
+
+    public void CreaPlayer()
+    {
+        Destroy(this.gameObject);
     }
 }

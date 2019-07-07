@@ -3,41 +3,65 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UniRx;
+using System;
 
 public enum GameState
 {
     Title = 0,
     Initialize = 1,
     Main = 2,
-    Result = 3
+    Result = 3,
+    Ranking = 4
 }
 
 public enum WaveState
 {
+    Wave0 = 0,
     Wave1 = 1,
-    Wave2 = 2
+    Wave2 = 2,
+    Wave3 = 3,
+    Wave4 = 4
 }
 
-public class GameManager : MonoBehaviour, IGameStateReadable
+public class GameManager : MonoBehaviour, IGameStateReadable, IWaveStateReadable
 {
     ReactiveProperty<GameState> _currentGameState = new ReactiveProperty<GameState>(GameState.Title);
     public IReadOnlyReactiveProperty<GameState> CurrentGameState { get { return _currentGameState; } }
+
+    // Wave管理
+    [SerializeField] int[] WavePointOfKilledEnemy = new int[] { };
+    [SerializeField] int[] WavePointOfSpendTime = new int[] { };
+    ReactiveProperty<WaveState> _currentWave = new ReactiveProperty<WaveState>(WaveState.Wave0);
+    public IReadOnlyReactiveProperty<WaveState> CurrentWaveState { get { return _currentWave; } }
+
 
     [SerializeField] Camera[] _cameras;
     [SerializeField] Canvas[] _canvases;
     [SerializeField] GameObject _playerPrefab;
 
-    PlayerCore _player;
+    protected PlayerCore _playerCore;
+    EnemyController _enemyController;
+    TimeManager _timeManager;
+    ScoreManager _scoreManager;
+    StarGenerator _starGenerator;
+    GameView _gameView;
+
 
     void Start()
     {
-        AudioManager.Instance.PlayBGM(BGM.BGM1.ToString(), 2f);
+        DontDestroyOnLoad(this);
 
+        AudioManager.Instance.PlayBGM(BGM.BGM1.ToString(), 2f);
+        _enemyController = GetComponent<EnemyController>();
+        _timeManager = GetComponent<TimeManager>();
+        _scoreManager = GetComponent<ScoreManager>();
+        _starGenerator = GetComponent<StarGenerator>();
+        _gameView = GetComponent<GameView>();
 
         CurrentGameState.Subscribe(state =>
         {
             ChangedGameState(state);
-        });
+        }).AddTo(this.gameObject);
     }
 
     void ChangedGameState(GameState state)
@@ -59,6 +83,10 @@ public class GameManager : MonoBehaviour, IGameStateReadable
             case GameState.Result:
                 ResultState();
                 break;
+
+            case GameState.Ranking:
+                RankingState();
+                break;
         }
     }
 
@@ -70,30 +98,87 @@ public class GameManager : MonoBehaviour, IGameStateReadable
         _canvases[1].gameObject.SetActive(true);
     }
 
-    void InitializeGameScene()
+    public void InitializeGameScene()
     {
-        _player = Instantiate(_playerPrefab).GetComponent<PlayerCore>();
-        _player.Initialize();
+        _playerCore = Instantiate(_playerPrefab).GetComponent<PlayerCore>();
+        _playerCore.Initialize(this);
+        _enemyController.Initialize(this, _playerCore);
+        _starGenerator.Initialize(this, _playerCore);
+        _timeManager.Reset(this);
+        _gameView.ResetView();
+
         _currentGameState.Value = GameState.Main;
     }
 
     void PlayingGameState()
     {
-        _player.IsDead
+        _timeManager.StartGameTimer();
+        UpdateGameView();
+        UpdateWaveState();
+
+
+        _playerCore.IsDead
             .Where(x => x)
+            .Delay(TimeSpan.FromSeconds(2))
             .Subscribe(x =>
             {
-                // 死亡処理
                 _currentGameState.Value = GameState.Result;
             });
-        
+    }
 
+    void UpdateGameView()
+    {
+
+        _playerCore.PlayerLife
+            .SkipLatestValueOnSubscribe()
+            .Where(x => x >= 0)
+            .Subscribe(x => _gameView.CutLifeView(x));
+        
+        _enemyController.KillNumber.Subscribe(x => _gameView.UpdateEnemyView(x));
+        _timeManager.PassedTime.Subscribe(x => _gameView.UpdateTimeView(x));
+        _starGenerator.GetStarNumber.Subscribe(x => _gameView.UpdateStarView(x));
+    }
+
+    void UpdateWaveState()
+    {
+        // Wave管理
+        _enemyController.KillNumber
+            .Where(x => CurrentGameState.Value == GameState.Main)
+            .Where(x => x >= WavePointOfKilledEnemy[(int)_currentWave.Value])
+            .TakeWhile(_ => CurrentGameState.Value == GameState.Result)
+            .Subscribe(_ => PlusWaveState());
+
+        _timeManager.PassedTime
+            .Where(x => CurrentGameState.Value == GameState.Main)
+            .Where(x => x >= WavePointOfSpendTime[(int)_currentWave.Value])
+            .TakeWhile(_ => CurrentGameState.Value == GameState.Result)
+            .Subscribe(_ => PlusWaveState());
+    }
+
+    void PlusWaveState()
+    {
+        var next = (int)CurrentWaveState.Value + 1;
+        _currentWave.Value = Utilities.ConvertToEnum<WaveState>(next);
     }
 
     void ResultState()
     {
+        //Time.timeScale = 0;
+        var score = _scoreManager.Score;
+        var time = _timeManager.PassedTime.Value;
+        var enemy = _enemyController.KillNumber.Value;
+        var allEnemy = _enemyController.AllGeneratedEnemies.Value;
+        var star = _starGenerator.GetStarNumber.Value;
+        _gameView.ShowResult(score,time,enemy,allEnemy,star);
+
+        _enemyController.CreaAllEnemyStream();
+        _starGenerator.CreaAllEnemyStream();
+        _playerCore.CreaPlayer();
+    }
+
+    void RankingState()
+    {
         naichilab.RankingLoader.Instance.SendScoreAndShowRanking(100);
-        Invoke("OnClickTitleBackButton",5.0f);
     }
 
     public void OnClickStartButton()
@@ -108,5 +193,10 @@ public class GameManager : MonoBehaviour, IGameStateReadable
     public void OnClickTitleBackButton()
     {
         _currentGameState.Value = GameState.Title;
+    }
+
+    public void OnClickRankingButton()
+    {
+        _currentGameState.Value = GameState.Ranking;
     }
 }
