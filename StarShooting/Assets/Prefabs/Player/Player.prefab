@@ -220,6 +220,7 @@ MonoBehaviour:
   StarBox: {fileID: 1356377007102952917}
   StarBulletPrefab: {fileID: 5207683660314072349, guid: f8abf61edcb3b47f586579cb536fe819,
     type: 3}
+  rotateSpeed: 115
   HoldingStars:
   - {fileID: 1356377007688700234}
   - {fileID: 1356377007725694724}
