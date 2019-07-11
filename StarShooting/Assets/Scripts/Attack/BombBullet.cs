@@ -8,9 +8,10 @@ using DG.Tweening;
 
 public class BombBullet : BaseBullet, IDamageApplicable
 {
-    Vector3 m_velocity; // 速度
     [SerializeField] GameObject sprite;
-    [SerializeField] GameObject explosion;
+    [SerializeField] GameObject explosion; // Bombの爆発アニメーション
+    [SerializeField] GameObject _destroyExplosion;
+    [SerializeField] float explosionTime = 0.8f;
 
     void Start()
     {
@@ -26,7 +27,7 @@ public class BombBullet : BaseBullet, IDamageApplicable
             }).AddTo(this.gameObject);
     }
 
-    [SerializeField] GameObject _destroyExplosion;
+    
     public void ApplyDamage(int power)
     {
         var explosion = Instantiate(_destroyExplosion, transform.position, Quaternion.identity);
@@ -41,15 +42,14 @@ public class BombBullet : BaseBullet, IDamageApplicable
 
     IEnumerator ExplosionCoroutine()
     {
-        var time = 0.8f;
         var spriteR = sprite.GetComponent<SpriteRenderer>();
         spriteR.DOFade(0f, 0);
-        spriteR.DOFade(1.0f, time / 2).SetEase(Ease.Linear).SetLoops(3, LoopType.Yoyo);
+        spriteR.DOFade(1.0f, explosionTime / 2).SetEase(Ease.Linear).SetLoops(3, LoopType.Yoyo);
         for (var i = 0; i < 3; i++)
         {
             // サウンド
 
-            yield return new WaitForSeconds(time);
+            yield return new WaitForSeconds(explosionTime);
         }
 
         Instantiate(explosion, transform.position, Quaternion.identity);

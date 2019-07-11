@@ -9,21 +9,21 @@ using DG.Tweening;
 // 発射前にPlayerの周りで回転している星
 public class RollingStar : BaseBullet,IDamageApplicable
 {
+    [HideInInspector] public PlayerCore core;
     [SerializeField] GameObject _destroyExplosion;
-    int _starSize = 0;
-    public PlayerCore core;
-
+    
     IDisposable _isCharging;
     public bool IsCharging { get { return _isCharging != null; } }
 
     Subject<Unit> _onDamaged = new Subject<Unit>(); // 自滅判定用
     public IObservable<Unit> OnDamaged { get { return _onDamaged; } }
 
-    private Dictionary<int, float> _sizeDictionary = new Dictionary<int, float>() { { 0, 0.56f }, { 1, 0.8f }, { 2, 1f }, { 3, 1.2f } };
+    Dictionary<int, float> _sizeDictionary = new Dictionary<int, float>() { { 0, 0.56f }, { 1, 0.8f }, { 2, 1f }, { 3, 1.2f } };
+    int _starSize = 0; // 現在の星の大きさレベル (Max3)
 
     void Start()
     {
-        // 発射前に何かに衝突した時
+        // 発射前に何かに衝突した場合の判定
         this.OnTriggerEnter2DAsObservable()
             .Where(_ => core.CurrentGameState.CurrentGameState.Value == GameState.Main) // InGameかどうか
             .Where(other => other.gameObject.GetComponent<PlayerCore>() == null)        // Playerだったら無視
@@ -46,7 +46,7 @@ public class RollingStar : BaseBullet,IDamageApplicable
     public void ChargePower()
     {
         // 1秒ごとにサイズを大きくする
-        _isCharging = Observable.Interval(TimeSpan.FromSeconds(1)).Subscribe(l =>
+        _isCharging = Observable.Interval(TimeSpan.FromSeconds(0.8f)).Subscribe(l =>
             {
                 PlusSize();
             }).AddTo(this);
@@ -55,18 +55,18 @@ public class RollingStar : BaseBullet,IDamageApplicable
     void PlusSize()
     {
         _starSize++;
-
         // 自滅チェック
         if (_starSize > 3)
         {
             ApplyDamage(1);
+            _starSize = 0;
             return;
         }
 
         ChangeSize();
     }
 
-    // ButtonUp時に呼ばれ、自身を見えなくする
+    // ButtonUp時(星発射時)に呼ばれ、自身を見えなくする
     public void ShootBullet()
     {
         StopChagingPower();
@@ -85,5 +85,6 @@ public class RollingStar : BaseBullet,IDamageApplicable
     {
         _isCharging.Dispose();
         _isCharging = null;
+        _starSize = 0;
     }
 }

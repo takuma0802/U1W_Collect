@@ -15,6 +15,7 @@ public class GameView : MonoBehaviour
 
     public void ResetView()
     {
+        ResultUI.SetActive(false);
         ResultUI.transform.DOMoveY(ResultUIPosition.localPosition.y, 1f);
         SettingLifeView();
         UpdateTimeView(0);
@@ -86,6 +87,7 @@ public class GameView : MonoBehaviour
 
     IEnumerator ShowResultCoroutine(int[] score, int time, int enemy, int allEnemy, int star)
     {
+        ResultUI.SetActive(true);
         yield return new WaitForSeconds(0.5f);
         // 移動
         var sequence = ResultUI.transform.DOMoveY(0, 3f).SetEase(Ease.InBounce);

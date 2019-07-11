@@ -5,7 +5,7 @@ using UniRx;
 using UniRx.Triggers;
 using DG.Tweening;
 
-public class BombExplosionBullet : BaseBullet,IDamageApplicable
+public class BombExplosionBullet : BaseBullet, IDamageApplicable
 {
     void Start()
     {
@@ -20,7 +20,7 @@ public class BombExplosionBullet : BaseBullet,IDamageApplicable
                 ApplyDamage(1);
             }).AddTo(this.gameObject);
 
-        Destroy(gameObject,0.2f);
+        Destroy(gameObject, 0.2f);
     }
 
     public void ApplyDamage(int power)

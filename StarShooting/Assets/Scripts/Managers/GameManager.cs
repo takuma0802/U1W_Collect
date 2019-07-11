@@ -100,12 +100,12 @@ public class GameManager : MonoBehaviour, IGameStateReadable, IWaveStateReadable
 
     public void InitializeGameScene()
     {
+        _gameView.ResetView();
         _playerCore = Instantiate(_playerPrefab,Vector2.zero,Quaternion.identity).GetComponent<PlayerCore>();
         _playerCore.Initialize(this);
         _enemyController.Initialize(this, _playerCore);
         _starGenerator.Initialize(this, _playerCore);
         _timeManager.Reset(this);
-        _gameView.ResetView();
         
         _currentWave.Value = WaveState.Wave0;
         _currentGameState.Value = GameState.Main;
@@ -117,7 +117,6 @@ public class GameManager : MonoBehaviour, IGameStateReadable, IWaveStateReadable
         UpdateGameView();
         UpdateWaveState();
 
-
         _playerCore.IsDead
             .Where(x => x)
             .Subscribe(x =>
@@ -128,7 +127,6 @@ public class GameManager : MonoBehaviour, IGameStateReadable, IWaveStateReadable
 
     void UpdateGameView()
     {
-
         _playerCore.PlayerLife
             .SkipLatestValueOnSubscribe()
             .Where(x => x >= 0)
