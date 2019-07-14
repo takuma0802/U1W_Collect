@@ -1,7 +1,7 @@
-﻿using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// MonoBehaviourを継承したシングルトン
@@ -15,7 +15,7 @@ public class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour {
     /// <summary>
     /// 同期オブジェクト
     /// </summary>
-    private static object syncObj = new object (); 
+    private static object syncObj = new object ();
 
     /// <summary>
     /// インスタンスのgetter/setter
@@ -23,28 +23,28 @@ public class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour {
     public static T Instance {
         get {
             // アプリ終了時に，再度インスタンスの呼び出しがある場合に，オブジェクトを生成することを防ぐ
-            if(applicationIsQuitting) {
+            if (applicationIsQuitting) {
                 return null;
             }
             // インスタンスがない場合に探す
-            if(instance == null) {
-                instance = FindObjectOfType<T>() as T;
+            if (instance == null) {
+                instance = FindObjectOfType<T> () as T;
 
                 // 複数のインスタンスがあった場合
-                if ( FindObjectsOfType<T>().Length > 1 ) {
+                if (FindObjectsOfType<T> ().Length > 1) {
                     return instance;
                 }
 
                 // Findで見つからなかった場合、新しくオブジェクトを生成
                 if (instance == null) {
                     // 同時にインスタンス生成を呼ばないためにlockする
-                    lock (syncObj) { 
-                        GameObject singleton = new GameObject();
+                    lock (syncObj) {
+                        GameObject singleton = new GameObject ();
                         // シングルトンオブジェクトだと分かりやすいように名前を設定
-                        singleton.name = typeof(T).ToString() + " (singleton)";
-                        instance = singleton.AddComponent<T>();
+                        singleton.name = typeof (T).ToString () + " (singleton)";
+                        instance = singleton.AddComponent<T> ();
                         // シーン変更時に破棄させない
-                        DontDestroyOnLoad(singleton);
+                        DontDestroyOnLoad (singleton);
                     }
                 }
 
@@ -62,7 +62,7 @@ public class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour {
     /// </summary>
     static bool applicationIsQuitting = false;
 
-    void OnApplicationQuit() {
+    void OnApplicationQuit () {
         applicationIsQuitting = true;
     }
 
@@ -71,5 +71,5 @@ public class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour {
     }
 
     // コンストラクタをprotectedにすることでインスタンスを生成出来なくする
-    protected SingletonMonoBehaviour () {}
+    protected SingletonMonoBehaviour () { }
 }

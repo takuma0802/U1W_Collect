@@ -1,12 +1,10 @@
-﻿public enum BGM 
-{
+public enum BGM {
     BGM1 = 0,
     BGM2 = 1,
     BGM3 = 2
 }
 
-public enum SE 
-{
+public enum SE {
     Bomb = 0,
     Bullet = 1,
     Click = 2,

@@ -1,14 +1,12 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using UniRx;
+using UnityEngine;
 
-public interface IGameStateReadable
-{
+public interface IGameStateReadable {
     IReadOnlyReactiveProperty<GameState> CurrentGameState { get; }
 }
 
-public interface IWaveStateReadable
-{
+public interface IWaveStateReadable {
     IReadOnlyReactiveProperty<WaveState> CurrentWaveState { get; }
 }
